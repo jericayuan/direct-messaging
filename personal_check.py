@@ -33,7 +33,7 @@ def start_client(server, port):
 
         # user_token = parsed_response.token
 
-        # msg_request = send_message_request(user_token, "sally", "hellooo", "")
+        # msg_request = send_message_request(user_token, "sally", "Hi, Sally!", "")
         # client.sendall(msg_request.encode() + b'\r\n')
 
         # server_response = client.recv(4096).decode().strip()
@@ -50,6 +50,7 @@ def start_client(server, port):
         dm_all = direct_message_request(sally_token, "all")
         client.sendall(dm_all.encode() + b'\r\n')
         print("\nsally all messages:")
+        print(extract_json(client.recv(4096).decode().strip()))
         print((client.recv(4096).decode().strip()))
 
         # dm_new = direct_message_request(sally_token, "all")

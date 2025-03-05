@@ -18,7 +18,6 @@ DataTuple = namedtuple("DataTuple", ["type", "message", "token"])
 MessageTuple = namedtuple("MessageTuple", ["type", "message"])
 
 def create_join_request(username: str, password: str) -> str:
-    print("test join request")
     request = {"join": {"username": username, "password": password, "token": ""}}
     return json.dumps(request)
 

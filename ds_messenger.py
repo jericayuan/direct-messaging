@@ -59,7 +59,7 @@ class DirectMessenger:
           message_details = DirectMessage()
           message_details.sender = message["from"]
           message_details.recipient = self.username
-          message_details.message = message["entry"]
+          message_details.message = message["message"]
           message_details.timestamp = message["timestamp"]
           new_messages.append(message_details.get_message_details())
     return new_messages
@@ -77,7 +77,7 @@ class DirectMessenger:
           message_details = DirectMessage()
           message_details.sender = message["from"]
           message_details.recipient = self.username
-          message_details.message = message["entry"]
+          message_details.message = message["message"]
           message_details.timestamp = message["timestamp"]
           all_messages.append(message_details.get_message_details())
     return all_messages
@@ -95,16 +95,21 @@ def client_socket(server: str, port: str, username: str, password: str, messenge
         parsed_response = extract_json(response)
 
         if parsed_response.type == "error":
-            print("[ERROR]", parsed_response.message)
-            return None
-
+          print("[ERROR]", parsed_response.message)
+          client.close()
+          return None
+        
+        if not parsed_response.token:
+          print("[ERROR] No token received. Authentication failed.")
+          client.close()
+          return None
+        
         messenger.set_token(parsed_response.token)
 
-        if not parsed_response.token:
-            print("[ERROR] No token received. Authententication failed.")
-            return None
+        print("Returning client...")
         return client
     except (socket.error, json.JSONDecodeError) as e:
        print("Failed to connect to server.")
+       client.close()
        return None
             

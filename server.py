@@ -55,6 +55,7 @@ class DSUServer:
                 if DEBUG:
                     print(f"Message received by server: {repr(data)}")
                 direct_message_read = False
+                direct_message_sent = False
                 msg = data.decode().strip() 
                 if not msg:
                     if DEBUG:
@@ -200,7 +201,7 @@ class DSUServer:
                                 print(token, current_user_token, self.sessions)
                                 if token == current_user_token and token in self.sessions:
                                     current_user = self.sessions[token]
-                                    
+                                    direct_message_sent = True
                                     
                                     if self._send_message(entry,current_user, recipient, timestamp):
                                         message = f'Direct message sent'
@@ -218,7 +219,7 @@ class DSUServer:
                                     message = self._read_all_messages(current_user)
                                     status = 'ok'
                                 else:
-                                    message = f'Unable to send direct message'
+                                    message = f'Invalid user token.'
                                     status = 'error'
                             elif args == 'new':
                                 if token == current_user_token and token in self.sessions:
@@ -227,7 +228,7 @@ class DSUServer:
                                     message = self._read_new_messages(current_user)
                                     status = 'ok'
                                 else:
-                                    message = f'Unable to send direct message'
+                                    message = f'Invalid user token.'
                                     status = 'error'
 
                             else:
@@ -240,7 +241,9 @@ class DSUServer:
                 if DEBUG:
                     print(f'Server sending the following message: "{message}"')
                 if direct_message_read:
-                    resp = {'response': {'type':status, 'messages': message, 'token': current_user_token} }
+                    resp = {'response': {'type':status, 'messages': message} }
+                elif direct_message_sent:
+                    resp = {'response': {'type':status, 'message': message} }
                 elif status == 'ok':
                     resp = {'response': {'type':status, 'message': message, 'token': current_user_token} }
                 else:
@@ -273,8 +276,8 @@ class DSUServer:
             
             else:
                 with users_path.open('w') as user_file:
-                    fetched_sender['messages'].append({'entry': entry, 'recipient': recipient, 'timestamp': timestamp, 'status': 'sent'})
-                    fetched_user['messages'].append({'entry': entry, 'from': username, 'timestamp': timestamp, 'status': 'new'})
+                    fetched_sender['messages'].append({'message': entry, 'recipient': recipient, 'timestamp': timestamp, 'status': 'sent'})
+                    fetched_user['messages'].append({'message': entry, 'from': username, 'timestamp': timestamp, 'status': 'new'})
                     existing_users[recipient] = fetched_user
                     existing_users[username] = fetched_sender
                     json.dump(existing_users, user_file)
@@ -293,9 +296,9 @@ class DSUServer:
             result = []
             for message in fetched_user['messages']:
                 if 'from' in message:
-                    mod_message = {'from': message['from'], 'entry': message['entry'], 'timestamp': message['timestamp']}
+                    mod_message = {'from': message['from'], 'message': message['message'], 'timestamp': message['timestamp']}
                 else:
-                    mod_message = {'recipient': message['recipient'], 'entry': message['entry'], 'timestamp': message['timestamp']}
+                    mod_message = {'recipient': message['recipient'], 'message': message['message'], 'timestamp': message['timestamp']}
                 result.append(mod_message)
                 if message['status'] == 'new':
                     message['status'] = 'read'
@@ -322,7 +325,7 @@ class DSUServer:
             result = []
             for message in fetched_user['messages']:
                 if message['status'] == 'new':
-                    mod_message = {'from': message['from'], 'entry': message['entry'], 'timestamp': message['timestamp']}
+                    mod_message = {'from': message['from'], 'message': message['message'], 'timestamp': message['timestamp']}
                     result.append(mod_message)
                     message['status'] = 'read'
             
