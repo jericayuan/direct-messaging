@@ -5,12 +5,12 @@
 import pytest
 import json
 from unittest.mock import patch, MagicMock
-from ds_messenger import DirectMessenger, DirectMessage, client_socket
+from ds_messenger import DirectMessenger, DirectMessage
 import socket
 
 @pytest.fixture
 def mock_socket():
-    with patch("ds_messenger.client_socket") as mock:
+    with patch("ds_messenger.DirectMessenger.client_socket") as mock:
         mock_conn = MagicMock()
         mock.return_value = mock_conn
         yield mock
@@ -163,7 +163,7 @@ def test_client_socket(messenger, mock_socket_client):
     }
     mock_conn.sendall = MagicMock()
     mock_conn.recv.return_value = json.dumps(join_response).encode()
-    client = client_socket('127.0.0.1', 3001, 'asdasd', 'sdfsdf', messenger)
+    client = messenger.client_socket('127.0.0.1', 3001, 'asdasd', 'sdfsdf')
     assert client is not None
     mock_conn.sendall.assert_called()
 
@@ -177,7 +177,7 @@ def test_client_socket_error(messenger, mock_socket_client):
     mock_conn.sendall = MagicMock()
     mock_conn.recv.return_value = json.dumps(join_response).encode()
 
-    client = client_socket('127.0.0.1', 3001, 'lalala', 'pass', messenger)
+    client = messenger.client_socket('127.0.0.1', 3001, 'lalala', 'pass')
     assert client is None
     mock_conn.sendall.assert_called()
 
@@ -191,11 +191,11 @@ def test_client_socket_error_2(messenger, mock_socket_client):
     mock_conn.sendall = MagicMock()
     mock_conn.recv.return_value = json.dumps(join_response).encode()
 
-    client = client_socket('127.0.0.1', 3001, 'testuser', 'testpass', messenger)
+    client = messenger.client_socket('127.0.0.1', 3001, 'testuser', 'testpass')
 
     assert client is None
 
 def test_client_socket_exception(messenger):
-    client = client_socket('1234', 3001, 'testuser', 'testpass', messenger)
+    client = messenger.client_socket('1234', 3001, 'testuser', 'testpass')
 
     assert client is None

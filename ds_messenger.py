@@ -37,7 +37,7 @@ class DirectMessenger:
 
   def send(self, message:str, recipient:str) -> bool:
     # must return true if message successfully sent, false if send failed.
-    client = client_socket(self.dsuserver, 3001, self.username, self.password, self)
+    client = self.client_socket(self.dsuserver, 3001, self.username, self.password)
     request = send_message_request(self.retrieve_token(), recipient, message, "")
     client.sendall(request.encode() + b'\r\n')
     response = extract_json(client.recv(4096).decode().strip())
@@ -49,7 +49,7 @@ class DirectMessenger:
 
   def retrieve_new(self) -> list:
     # must return a list of DirectMessage objects containing all new 
-    client = client_socket(self.dsuserver, 3001, self.username, self.password, self)
+    client = self.client_socket(self.dsuserver, 3001, self.username, self.password)
     request = direct_message_request(self.retrieve_token(), "new")
     client.sendall(request.encode() + b'\r\n')
     response = extract_json(client.recv(4096).decode().strip())
@@ -67,7 +67,7 @@ class DirectMessenger:
  
   def retrieve_all(self) -> list:
     # must return a list of DirectMessage objects containing all messages
-    client = client_socket(self.dsuserver, 3001, self.username, self.password, self)
+    client = self.client_socket(self.dsuserver, 3001, self.username, self.password)
     request = direct_message_request(self.retrieve_token(), "all")
     client.sendall(request.encode() + b'\r\n')
     response = extract_json(client.recv(4096).decode().strip())
@@ -83,33 +83,33 @@ class DirectMessenger:
     return all_messages
 
   
-def client_socket(server: str, port: str, username: str, password: str, messenger: DirectMessenger):
-    try:
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((server, port))
-            
-        join_request = create_join_request(username, password)
-        client.sendall(join_request.encode() + b"\r\n")
+  def client_socket(self, server: str, port: str, username: str, password: str):
+      try:
+          client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+          client.connect((server, port))
+              
+          join_request = create_join_request(username, password)
+          client.sendall(join_request.encode() + b"\r\n")
 
-        response = client.recv(4096).decode().strip()
-        parsed_response = extract_json(response)
+          response = client.recv(4096).decode().strip()
+          parsed_response = extract_json(response)
 
-        if parsed_response.type == "error":
-          print("[ERROR]", parsed_response.message)
-          client.close()
-          return None
-        
-        if not parsed_response.token:
-          print("[ERROR] No token received. Authentication failed.")
-          client.close()
-          return None
-        
-        messenger.set_token(parsed_response.token)
+          if parsed_response.type == "error":
+            print("[ERROR]", parsed_response.message)
+            client.close()
+            return None
+          
+          if not parsed_response.token:
+            print("[ERROR] No token received. Authentication failed.")
+            client.close()
+            return None
+          
+          self.set_token(parsed_response.token)
 
-        print("Returning client...")
-        return client
-    except (socket.error, json.JSONDecodeError) as e:
-       print("Failed to connect to server.")
-       client.close()
-       return None
+          print("Returning client...")
+          return client
+      except (socket.error, json.JSONDecodeError) as e:
+        print("Failed to connect to server.")
+        client.close()
+        return None
             

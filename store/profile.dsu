@@ -1,0 +1,2 @@
+{"dsuserver": "127.0.0.1", "username": "jsmith", "password": "1234", "bio": "", "_message": [], "friends": []}
+{"dsuserver": "127.0.0.1", "username": "sally", "password": "1234", "bio": "", "_message": [], "friends": ["jsmith"]}

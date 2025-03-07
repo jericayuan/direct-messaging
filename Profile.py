@@ -21,24 +21,9 @@ import time
 from pathlib import Path
 
 
-"""
-DsuFileError is a custom exception handler that you should
-catch in your own code. It
-is raised when attempting to load or save Profile objects to file the system.
-
-"""
-
-
 class DsuFileError(Exception):
     pass
 
-
-"""
-DsuProfileError is a custom exception handler that you should catch in your own
-code. It
-is raised when attempting to deserialize a dsu file to a Profile object.
-
-"""
 
 
 class DsuProfileError(Exception):
@@ -62,7 +47,6 @@ class Post(dict):
         self.set_entry(entry)
 
         # Subclass dict to expose Post properties for serialization
-        # Don't worry about this!
         dict.__init__(self, entry=self._entry, timestamp=self._timestamp)
 
     def set_entry(self, entry):
@@ -95,32 +79,14 @@ class Post(dict):
 
 
 class Profile:
-    """
-    The Profile class exposes the properties required to
-    join an ICS 32 DSU server. You
-    will need to use this class to manage the information
-    provided by each new user
-    created within your program for a2. Pay close attention to
-    the properties and
-    functions in this class as you will need to make
-    use of each of them in your program.
-
-    When creating your program you will need to collect
-    user input for the properties
-    exposed by this class. A Profile class should ensure that a
-    username and password
-    are set, but contains no conventions to do so.
-    You should make sure that your code
-    verifies that required properties are set.
-
-    """
-
+    
     def __init__(self, dsuserver=None, username=None, password=None):
-        self.dsuserver = dsuserver  # REQUIRED
-        self.username = username  # REQUIRED
-        self.password = password  # REQUIRED
-        self.bio = ""  # OPTIONAL
-        self._posts = []  # OPTIONAL
+        self.dsuserver = dsuserver
+        self.username = username
+        self.password = password
+        self.bio = ""
+        self._message = []
+        self.friends = []
 
     """
 
@@ -136,28 +102,10 @@ class Profile:
 
     """
 
-    def add_post(self, post: Post) -> None:
-        self._posts.append(post)
+    def add_message(self, message: Post) -> None:
+        self._message.append(message)
 
-    """
-
-    del_post removes a Post at a given index and returns
-    True if successful and False if
-    an invalid index was supplied.
-
-    To determine which post to delete you must
-    implement your own search operation on
-    the posts returned from the get_posts function to find the correct index.
-
-    """
-
-    def del_post(self, index: int) -> bool:
-        try:
-            del self._posts[index]
-            return True
-        except IndexError:
-            return False
-
+    
     """
     get_posts returns the list object containing all posts
     that have been added to the
@@ -166,69 +114,58 @@ class Profile:
     """
 
     def get_posts(self) -> list[Post]:
-        return self._posts
+        return self._message
 
-    """
-
-    save_profile accepts an existing dsu file to
-    save the current instance of Profile
-    to the file system.
-
-    Example usage:
-
-    profile = Profile()
-    profile.save_profile('/path/to/file.dsu')
-
-    Raises DsuFileError
-
-    """
-
+   
+    def add_friend(self, friend:str) -> None:
+        if friend not in self.friends:
+            self.friends.append(friend)
+    
     def save_profile(self, path: str) -> None:
         p = Path(path)
+        all_profiles = []
+        profile_found = False
 
         if p.exists() and p.suffix == ".dsu":
             try:
-                f = open(p, "w")
-                json.dump(self.__dict__, f)
-                f.close()
+                with open(p, "r") as f:
+                    for line in f:
+                        profile_data = json.loads(line.strip())
+                        if profile_data["username"] == self.username:
+                            profile_data = self.__dict__
+                            profile_found = True
+                        all_profiles.append(profile_data)
+                
+                with open(p, "w") as f:
+                    for profile in all_profiles:
+                        f.write(json.dumps(profile) + "\n")
+                    if not profile_found:
+                        f.write(json.dumps(self.__dict__) + "\n")
             except Exception as ex:
-                raise DsuFileError(
-                    "Error while attempting to process the DSU file.", ex
-                )
+                raise DsuFileError("Error while attempting to process the DSU file.", ex)
         else:
-            raise DsuFileError("Invalid DSU file path or type")
+            with open(p, "w") as f:
+                f.write(json.dumps(self.__dict__) + "\n")
 
-    """
-
-    load_profile will populate the current instance of
-    Profile with data stored in a
-    DSU file.
-
-    Example usage:
-
-    profile = Profile()
-    profile.load_profile('/path/to/file.dsu')
-
-    Raises DsuProfileError, DsuFileError
-
-    """
-
-    def load_profile(self, path: str) -> None:
+    def load_profile(self, path: str, username) -> None:
         p = Path(path)
 
         if p.exists() and p.suffix == ".dsu":
             try:
-                f = open(p, "r")
-                obj = json.load(f)
-                self.username = obj["username"]
-                self.password = obj["password"]
-                self.dsuserver = obj["dsuserver"]
-                self.bio = obj["bio"]
-                for post_obj in obj["_posts"]:
-                    post = Post(post_obj["entry"], post_obj["timestamp"])
-                    self._posts.append(post)
-                f.close()
+                with open(p, 'r') as f:
+                    for line in f:
+                        obj = json.loads(line.strip())
+                        if obj['username'] == username:
+                            self.password = obj["password"]
+                            self.dsuserver = obj["dsuserver"]
+                            self.bio = obj["bio"]
+                            self.friends = obj.get("friends", [])
+                            for message_obj in obj.get('message', []):
+                                post = Post(message_obj["entry"], message_obj["timestamp"])
+                                self._message.append(post)
+                            return True
+                    return False
             except Exception as ex:
                 raise DsuProfileError(ex)
         else:
-            raise DsuFileError()
+            raise DsuFileError('Profile not found.')
