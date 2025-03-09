@@ -57,10 +57,12 @@ class DirectMessenger:
     if response.message:
        for message in response.message:
           message_details = DirectMessage()
-          message_details.sender = message["from"]
-          message_details.recipient = self.username
-          message_details.message = message["message"]
-          message_details.timestamp = message["timestamp"]
+
+          message_details.sender = message.get("from", self.username)  
+          message_details.recipient = message.get("recipient", self.username)
+
+          message_details.message = message.get("message")
+          message_details.timestamp = message.get("timestamp")
           new_messages.append(message_details.get_message_details())
     return new_messages
           
@@ -75,10 +77,11 @@ class DirectMessenger:
     if response.message:
        for message in response.message:
           message_details = DirectMessage()
-          message_details.sender = message["from"]
-          message_details.recipient = self.username
-          message_details.message = message["message"]
-          message_details.timestamp = message["timestamp"]
+
+          message_details.sender = message.get("from", self.username)  
+          message_details.recipient = message.get("recipient", self.username)
+          message_details.message = message.get("message")
+          message_details.timestamp = message.get("timestamp")   
           all_messages.append(message_details.get_message_details())
     return all_messages
 

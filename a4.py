@@ -4,7 +4,7 @@ from typing import Text
 from ds_messenger import DirectMessenger
 import Profile
 from pathlib import Path
-
+from datetime import datetime
 class Body(tk.Frame):
     def __init__(self, root, recipient_selected_callback=None):
         tk.Frame.__init__(self, root)
@@ -178,6 +178,9 @@ class MainApp(tk.Frame):
         
         message = self.body.get_text_entry()
         if message.strip():
+            timestamp = datetime.now().timestamp()
+            self.profile.add_message_sent(message=message, recipient=self.recipient, timestamp=timestamp)
+            self.profile.save_profile(self.file_path)
             success = self.ds_messenger.send(message, self.recipient)
             if success:
                 self.body.insert_user_message(message)
@@ -199,6 +202,26 @@ class MainApp(tk.Frame):
 
     def recipient_selected(self, recipient):
         self.recipient = recipient
+        self.body.entry_editor.delete('1.0', tk.END)
+
+        if self.profile and not self.ds_messenger:
+            for message in self.profile.message_sent:
+                if message["to"] == self.recipient:
+                    self.body.insert_user_message(message["message"])
+            for message in self.profile.message_received:
+                if message['from'] == self.recipient:
+                    self.body.insert_contact_message(message['message'])
+
+        if self.ds_messenger and self.ds_messenger.retrieve_token():
+            all_messages = self.ds_messenger.retrieve_all()
+            for message in all_messages:
+                if message.recipient == self.recipient and message.sender == self.username:
+                    self.body.insert_user_message(message.message)
+                    self.body.set_text_entry("")
+                elif message.recipient == self.username and message.sender == self.recipient:
+                    self.body.insert_contact_message(message.message)                        
+
+
 
     def configure_server(self):
         ud = NewContactDialog(self.root, "Configure Account",
@@ -212,7 +235,7 @@ class MainApp(tk.Frame):
             for friend in self.profile.friends:
                 self.body.insert_contact(friend)
         
-        if not self.profile.load_profile(self.file_path, self.username):
+        if not self.profile.load_profile(self.file_path, self.username) and self.server:
             self.profile.save_profile(self.file_path)
         if self.username and self.password and self.server:
             if self.ds_messenger is None:
@@ -232,12 +255,33 @@ class MainApp(tk.Frame):
 
     def check_new(self):
         # You must implement this!
-        if self.ds_messenger and self.ds_messenger.retrieve_token():
+        if self.ds_messenger:        
+            '''
+                TODO: 
+                - FIGURE OUT HOW TO KEEP CHAT HISTORY UPDATING WHILE IN CHAT, NOT WHEN CLICKING IN AND OUT OF THE CHAT
+                - FIGURE OUT LOCAL DATABASE. CURRENTLY ABLE TO SAVE MESSAGES SENT TO OTHER PEOPLE, BUT NEED TO FIGURE OUT TO SAVE THE MESSAGES RECEIVED FROM OTHER PEOPLE
+                    - MAKE IT SO THAT WHEN LOADING, MESSAGES ARE STILL THERE WITHOUT A CONNECTION
+
+            '''
+            
             new_messages = self.ds_messenger.retrieve_new()
-            for msg in new_messages:
-                self.body.insert_contact_message(f"{msg.sender}: {msg.message}")
+           
+            for message in new_messages:
+                sender = message.sender
+                text = message.message
+                timestamp = message.timestamp
+                self.profile.add_message_received(message=message, sender=sender, timestamp=timestamp)
+                self.profile.save_profile(self.file_path)
+
+                if sender == self.recipient:
+                    self.body.insert_contact_message(f"{sender}: {text}")
+                else:
+                    if sender not in self.chat_history:
+                        self.chat_history[sender] = []
+                    self.chat_history[sender].append(text)
 
         self.root.after(3000, self.check_new)
+
 
     def _draw(self):
         # Build a menu and add it to the root frame.

@@ -42,16 +42,22 @@ def start_client(server, port):
         # print("\njsmith message dm send status:")
         # print(parsed_server_response)
 
-        join_request = create_join_request("yuh", "1234")
+        join_request = create_join_request("sally", "1234")
         client.sendall(join_request.encode() + b"\r\n")
         open_sally = extract_json(client.recv(4096).decode().strip())
         print("\nopening sally profile:", open_sally)
         sally_token = open_sally.token
 
-        # dm_all = direct_message_request(sally_token, "all")
-        # client.sendall(dm_all.encode() + b'\r\n')
-        # print("\nsally all messages:")
-        # print(extract_json(client.recv(4096).decode().strip()))
+
+        # ds_messenger = DirectMessenger("127.0.0.1", "sally", "1234")
+        # dms_all = ds_messenger.retrieve_all()
+        # print(dms_all)
+
+        dm_all = direct_message_request(sally_token, "all")
+        client.sendall(dm_all.encode() + b'\r\n')
+        print("\nsally all messages:")
+        print(extract_json(client.recv(4096).decode().strip()))
+
         # print((client.recv(4096).decode().strip()))
 
         # dm_new = direct_message_request(sally_token, "all")

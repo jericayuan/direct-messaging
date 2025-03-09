@@ -85,7 +85,8 @@ class Profile:
         self.username = username
         self.password = password
         self.bio = ""
-        self._message = []
+        self.message_sent = []
+        self.message_received = []
         self.friends = []
 
     """
@@ -102,10 +103,21 @@ class Profile:
 
     """
 
-    def add_message(self, message: Post) -> None:
-        self._message.append(message)
+    def add_message_sent(self, recipient, timestamp, message: Post) -> None:
+        self.message_sent.append({
+            "to": recipient,
+            "message": message,
+            "timestamp": timestamp
+        })
 
+    def add_message_received(self, sender, timestamp, message: Post) -> None:
+        self.message_received.append({
+            "from": sender,
+            "message": message,
+            "timestamp": timestamp
+        })
     
+
     """
     get_posts returns the list object containing all posts
     that have been added to the
@@ -113,8 +125,8 @@ class Profile:
 
     """
 
-    def get_posts(self) -> list[Post]:
-        return self._message
+    def get_message_sent(self) -> list[Post]:
+        return self.message_sent
 
    
     def add_friend(self, friend:str) -> None:
@@ -160,9 +172,8 @@ class Profile:
                             self.dsuserver = obj["dsuserver"]
                             self.bio = obj["bio"]
                             self.friends = obj.get("friends", [])
-                            for message_obj in obj.get('message', []):
-                                post = Post(message_obj["entry"], message_obj["timestamp"])
-                                self._message.append(post)
+                            self.message_sent = obj.get("message_sent", [])
+                            self.message_received = obj.get("message_received", [])
                             return True
                     return False
             except Exception as ex:
