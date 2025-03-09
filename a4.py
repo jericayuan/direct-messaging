@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, simpledialog
+from tkinter import ttk, filedialog, simpledialog, messagebox
 from typing import Text
 from ds_messenger import DirectMessenger
 import Profile
@@ -129,7 +129,7 @@ class NewContactDialog(tk.simpledialog.Dialog):
         self.username_entry.pack()
 
         self.password_label = tk.Label(frame, width=30, text="Password")
-        self.username_label.pack()
+        self.password_label.pack()
         self.password_entry = tk.Entry(frame, width=30)
         self.password_entry['show'] = '*'
         self.password_entry.insert(tk.END, self.pwd)
@@ -141,11 +141,16 @@ class NewContactDialog(tk.simpledialog.Dialog):
         # * symbols.
         #self.password...
 
+        self.username_entry.delete(0, tk.END)
+        self.password_entry.delete(0, tk.END)
+        self.server_entry.delete(0, tk.END)
 
     def apply(self):
         self.user = self.username_entry.get()
         self.pwd = self.password_entry.get()
         self.server = self.server_entry.get()
+
+
 
 
 class MainApp(tk.Frame):
@@ -164,7 +169,6 @@ class MainApp(tk.Frame):
         # instantiate your DirectMessenger instance after this line.
         #self.direct_messenger = ... continue!
         self._draw()
-        self.body.insert_contact("studentexw23") # adding one example student.
 
     def set_profile(self):
         self.profile = Profile.Profile(self.server, self.username, self.password)
@@ -173,7 +177,7 @@ class MainApp(tk.Frame):
     def send_message(self):
         # You must implement this!
         if not self.ds_messenger or not self.recipient:
-            print("Error: No server configured or recipient selected.")
+            messagebox.showinfo("Error", "No server configured or recipient selected.")
             return
         
         message = self.body.get_text_entry()
@@ -194,23 +198,41 @@ class MainApp(tk.Frame):
         # the name of the new contact, and then use one of the body
         # methods to add the contact to your contact list
         contact = simpledialog.askstring("Add Contact", "Enter contact username:")
-        if contact:
-            self.body.insert_contact(contact)
-            self.profile.add_friend(contact)
-            self.profile.save_profile(self.file_path)
+        if contact and self.profile:
+            users = self.profile.get_users(self.file_path)
+            if contact not in users:
+                messagebox.showerror("ERROR", "This isn't a valid user!")
+            elif contact in self.profile.get_friends():
+                messagebox.showinfo("", "This person is already your friend!")
+            else:
+                self.body.insert_contact(contact)
+                self.profile.add_friend(contact)
+                self.profile.save_profile(self.file_path)
+        self.body.set_text_entry("")
 
 
     def recipient_selected(self, recipient):
         self.recipient = recipient
         self.body.entry_editor.delete('1.0', tk.END)
-
+        all_messages = []
         if self.profile and not self.ds_messenger:
+            # for message in self.profile.message_sent:
+            #     if message["to"] == self.recipient:
+            #         self.body.insert_user_message(message["message"])
+            # for message in self.profile.message_received:
+            #     if message['from'] == self.recipient:
+            #         self.body.insert_contact_message(message['message'])
             for message in self.profile.message_sent:
-                if message["to"] == self.recipient:
-                    self.body.insert_user_message(message["message"])
+                all_messages.append(message)
             for message in self.profile.message_received:
-                if message['from'] == self.recipient:
+                all_messages.append(message)
+            sorted_messages = sorted(all_messages, key= lambda x: float(x["timestamp"]))
+            for message in sorted_messages:
+                if message.get("to") == self.recipient:
+                    self.body.insert_user_message(message["message"])
+                elif message.get("from") == self.recipient:
                     self.body.insert_contact_message(message['message'])
+
 
         if self.ds_messenger and self.ds_messenger.retrieve_token():
             all_messages = self.ds_messenger.retrieve_all()
@@ -231,12 +253,17 @@ class MainApp(tk.Frame):
         self.server = ud.server
 
         self.set_profile()
+        
         if self.profile.load_profile(self.file_path, self.username):
             for friend in self.profile.friends:
                 self.body.insert_contact(friend)
         
         if not self.profile.load_profile(self.file_path, self.username) and self.server:
             self.profile.save_profile(self.file_path)
+
+        if not self.profile.check_user_password(self.file_path, self.username, self.password):
+            messagebox.showerror("ERROR", "Could not log in.")
+            return
         if self.username and self.password and self.server:
             if self.ds_messenger is None:
                 self.ds_messenger = DirectMessenger()
@@ -245,6 +272,7 @@ class MainApp(tk.Frame):
                 self.ds_messenger.password = self.password
                 self.ds_messenger.client_socket(self.server, 3001, self.username, self.password)
                 return
+        
         # You must implement this!
         # You must configure and instantiate your
         # DirectMessenger instance after this line.
@@ -270,11 +298,11 @@ class MainApp(tk.Frame):
                 sender = message.sender
                 text = message.message
                 timestamp = message.timestamp
-                self.profile.add_message_received(message=message, sender=sender, timestamp=timestamp)
+                self.profile.add_message_received(message=text, sender=sender, timestamp=timestamp)
                 self.profile.save_profile(self.file_path)
 
                 if sender == self.recipient:
-                    self.body.insert_contact_message(f"{sender}: {text}")
+                    self.body.insert_contact_message(text)
                 else:
                     if sender not in self.chat_history:
                         self.chat_history[sender] = []

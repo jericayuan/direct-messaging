@@ -132,7 +132,38 @@ class Profile:
     def add_friend(self, friend:str) -> None:
         if friend not in self.friends:
             self.friends.append(friend)
+
+    def get_friends(self):
+        return self.friends
     
+    def get_users(self, path):
+        p = Path(path)
+        all_users = []
+        if p.exists():
+            try:
+                with open(p, "r") as f:
+                    for line in f:
+                        profile_data = json.loads(line.strip())
+                        all_users.append(profile_data["username"])
+                return all_users
+            except Exception as e:
+                raise DsuFileError("Error while processing file.")
+    
+    def check_user_password(self, path, username, password):
+        p = Path(path)
+        if p.exists():
+            try:
+                with open(p, 'r') as f:
+                    for line in f:
+                        profile_data = json.loads(line.strip())
+                        if profile_data['username'] == username:
+                            if password == profile_data['password']:
+                                return True
+                            else:
+                                return False
+            except Exception as e:
+                raise DsuFileError("Error in collecting data", e)
+
     def save_profile(self, path: str) -> None:
         p = Path(path)
         all_profiles = []
