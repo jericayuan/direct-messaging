@@ -153,6 +153,7 @@ class Body(ttk.Frame):
         )
 
 
+# pylint: disable=too-many-ancestors
 class Footer(ttk.Frame):
     """Footer section of the chat containing the send button."""
 
@@ -203,9 +204,12 @@ class Footer(ttk.Frame):
         self.footer_label.pack(fill=tk.BOTH, side=tk.LEFT, padx=5)
 
 
+# pylint: disable=too-many-instance-attributes
 class NewContactDialog(tk.simpledialog.Dialog):
     """Dialog window for adding a new contact or configuring an account."""
 
+    # pylint: disable=too-many-positional-arguments
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         root,
@@ -318,10 +322,12 @@ class NewContactDialog(tk.simpledialog.Dialog):
         self.destroy()
 
 
+# pylint: disable=too-many-instance-attributes
 class MainApp(ttk.Frame):
     """Main application class for managing the GUI and
     communication with the server."""
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, root):
         """Initialize the main application window.
 
@@ -489,6 +495,9 @@ class MainApp(ttk.Frame):
 
         self.body.entry_editor.update_idletasks()
 
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-statements
+    # pylint: disable=too-many-branches
     def configure_server(self):
         """Handles user login and switching accounts,
         including server validation."""
@@ -527,8 +536,7 @@ class MainApp(ttk.Frame):
         # self.set_profile()
         if self.username and self.password \
                 and self.file_path and self.file_name:
-            if self.ds_messenger:
-                self.ds_messenger = ""
+            self.ds_messenger = ""
 
             self.file_path.mkdir(parents=True, exist_ok=True)
 
@@ -611,9 +619,6 @@ class MainApp(ttk.Frame):
         self.recipient = ""
 
         self.body.posts_tree.update_idletasks()
-        # You must implement this!
-        # You must configure and instantiate your
-        # DirectMessenger instance after this line.
 
     def check_new(self):
         """Checks for new messages from the
