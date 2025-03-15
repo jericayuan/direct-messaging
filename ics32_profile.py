@@ -241,11 +241,9 @@ class Profile:
                     f.truncate()
                     json.dump(profile_dict, f, indent=4)
 
-                print(f"DEBUG: Saved for {username} at {p}")
                 return True
             with open(p, "w", encoding="utf-8") as f:
                 json.dump(profile_dict, f, indent=4)
-            print(f"DEBUG: New profile created for {username} at {p}")
             return True
 
         except Exception as ex:

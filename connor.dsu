@@ -1,0 +1,23 @@
+{
+    "dsuserver": "127.0.0.1",
+    "username": "Connor",
+    "password": "1234",
+    "bio": "",
+    "message_sent": [
+        {
+            "to": "Bob",
+            "message": "Not much, how are you?",
+            "timestamp": 1742020738.957037
+        }
+    ],
+    "message_received": [
+        {
+            "from": "Bob",
+            "message": "Hey man, hows it goin?",
+            "timestamp": "1742020730.910792"
+        }
+    ],
+    "friends": [
+        "Bob"
+    ]
+}

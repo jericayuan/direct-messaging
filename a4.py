@@ -629,19 +629,19 @@ class MainApp(ttk.Frame):
             return
 
         new_messages = self.ds_messenger.retrieve_new()
+        if new_messages:
+            for message in new_messages:
+                sender = message.sender
+                text = message.message
+                timestamp = message.timestamp
+                self.profile.add_message_received(
+                    message=text, sender=sender, timestamp=timestamp
+                )
+                self.profile.save_profile(self.username,
+                                          self.password, self.user_file)
 
-        for message in new_messages:
-            sender = message.sender
-            text = message.message
-            timestamp = message.timestamp
-            self.profile.add_message_received(
-                message=text, sender=sender, timestamp=timestamp
-            )
-            self.profile.save_profile(self.username,
-                                      self.password, self.user_file)
-
-            if sender == self.recipient:
-                self.body.insert_contact_message(text)
+                if sender == self.recipient:
+                    self.body.insert_contact_message(text)
 
         self.job = self.root.after(2000, self.check_new)
 

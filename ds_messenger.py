@@ -120,21 +120,24 @@ class DirectMessenger:
         client = self.client_socket(self.dsuserver, 3001,
                                     self.username, self.password)
         request = direct_message_request(self.retrieve_token(), "new")
-        client.sendall(request.encode() + b"\r\n")
-        response = extract_json(client.recv(4096).decode().strip())
-        new_messages = []
-        if response.message:
-            for message in response.message:
-                message_details = DirectMessage()
+        try:
+            client.sendall(request.encode() + b"\r\n")
+            response = extract_json(client.recv(4096).decode().strip())
+            new_messages = []
+            if response.message:
+                for message in response.message:
+                    message_details = DirectMessage()
 
-                message_details.sender = message.get("from", self.username)
-                message_details.recipient = message.get("recipient",
-                                                        self.username)
+                    message_details.sender = message.get("from", self.username)
+                    message_details.recipient = message.get("recipient",
+                                                            self.username)
 
-                message_details.message = message.get("message")
-                message_details.timestamp = message.get("timestamp")
-                new_messages.append(message_details)
-        return new_messages
+                    message_details.message = message.get("message")
+                    message_details.timestamp = message.get("timestamp")
+                    new_messages.append(message_details)
+            return new_messages
+        except AttributeError:
+            pass
 
     def retrieve_all(self) -> list:
         """Retrieves all messages from the server.
@@ -196,7 +199,6 @@ class DirectMessenger:
 
             self.set_token(parsed_response.token)
 
-            print("Returning client...")
             return client
         except (socket.error, json.JSONDecodeError) as e:
             print("Failed to connect to server.", e)

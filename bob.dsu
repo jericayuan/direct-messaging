@@ -1,0 +1,39 @@
+{
+    "dsuserver": "127.0.0.1",
+    "username": "Bob",
+    "password": "1234",
+    "bio": "",
+    "message_sent": [
+        {
+            "to": "Alice",
+            "message": "Hey Alice, whats up?",
+            "timestamp": 1742020724.51441
+        },
+        {
+            "to": "Connor",
+            "message": "Hey man, hows it goin?",
+            "timestamp": 1742020730.887682
+        }
+    ],
+    "message_received": [
+        {
+            "from": "Connor",
+            "message": "Not much, how are you?",
+            "timestamp": "1742020738.98036"
+        },
+        {
+            "from": "Alice",
+            "message": "nothing much",
+            "timestamp": "1742020747.714539"
+        },
+        {
+            "from": "Alice",
+            "message": "wbu?",
+            "timestamp": "1742020751.017329"
+        }
+    ],
+    "friends": [
+        "Alice",
+        "Connor"
+    ]
+}
