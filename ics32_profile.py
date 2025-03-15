@@ -35,13 +35,13 @@ from pathlib import Path
 
 class DsuFileError(Exception):
     """Exception raised for errors related to DSU file operations."""
-    print("ERROR related to DSU file operations.")
+    message = "ERROR related to DSU file operations."
 
 
 class DsuProfileError(Exception):
     """Exception raised for errors related to loading or
     processing user profiles."""
-    print("ERROR related to DSU profile operations.")
+    message = "ERROR related to DSU profile operations."
 
 
 class Post(dict):
