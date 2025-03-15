@@ -99,7 +99,6 @@ class DirectMessenger:
         Returns:
                 bool: True if message is successfully sent, False otherwise.
         """
-        # must return true if message successfully sent, false if send failed.
         client = self.client_socket(self.dsuserver, 3001,
                                     self.username, self.password)
         request = send_message_request(self.retrieve_token(),
@@ -111,6 +110,7 @@ class DirectMessenger:
             return True
         return False
 
+    # pylint: disable=inconsistent-return-statements
     def retrieve_new(self) -> list:
         """Retrieves new messages from the server.
 

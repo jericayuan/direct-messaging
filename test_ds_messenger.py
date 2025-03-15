@@ -176,6 +176,23 @@ def test_retrieve_new(messenger, mock_socket):
     mock_client.sendall.assert_called()
 
 
+def test_retrieve_new_attribute_error(messenger, mock_socket):
+    """Tests retrieve_new handles an AttributeError gracefully."""
+
+    mock_client = MagicMock()
+    mock_socket.return_value = mock_client
+
+    mock_client.recv.return_value = json.dumps(
+        {"response": {"invalid_key": "unexpected_value"}}
+    ).encode()
+
+    messenger.set_token("testtoken")
+
+    messages = messenger.retrieve_new()
+
+    assert messages is None
+
+
 # pylint: disable=redefined-outer-name
 def test_retrieve_all(messenger, mock_socket):
     """Tests retrieving all messages."""
