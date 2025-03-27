@@ -29,7 +29,7 @@ ds_protocol.py
 - Defines the Direct Social Protocol (DSP) for sending and receiving messages.
 
 ds_messenger.py	
-- Implements the DirectMessenger class to send and retrieve messages.
+- Implements the ds_protocol.py in DirectMessenger class to send and retrieve messages.
 
 ics32_profile.py
 - Handles user profiles, authentication, and data storage.
@@ -60,6 +60,6 @@ Usage:
     - python server.py
  2. Start chat application
     - python a4.py
- 3. Open 'Settings' dropdown, and configure the server to create a profile or sign interact
+ 3. Open 'Settings' dropdown, and configure the server to create a profile or sign in to interact
  4. Enter all required fields of configure server.
  5. Add contacts to start chatting.
