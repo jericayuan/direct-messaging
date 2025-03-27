@@ -5,6 +5,9 @@ Main application module for managing user profiles and messaging.
 This module handles GUI interaction, server configuration, user authentication,
 and real-time messaging updates.
 '''
+# NAME - Jerica Yuan
+# EMAIL - jxyuan@uci.edu
+# STUDENT ID - 73288143
 
 import tkinter as tk
 from tkinter import ttk, simpledialog, messagebox

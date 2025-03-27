@@ -10,6 +10,9 @@ This module provides functionality for:
 It supports JSON serialization for persistent storage.
 """
 
+# NAME - Jerica Yuan
+# EMAIL - jxyuan@uci.edu
+# STUDENT ID - 73288143
 # ICS 32
 # Assignment #2: Journal
 #
